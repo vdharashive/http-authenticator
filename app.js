@@ -78,7 +78,7 @@ function digestChallenge(obj, logger) {
         logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
           uri = obj.uri || obj.url;
-          if (obj.auth) auth = Object.assign({}, obj.auth);
+          if (obj.username && obj.password) Object.assign(auth, {username: obj.username, password: obj.password});
           if (obj.method) method = obj.method.toUpperCase();
         }
         else uri = obj;
