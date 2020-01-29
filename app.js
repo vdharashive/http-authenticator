@@ -57,12 +57,8 @@ function digestChallenge(obj, logger) {
   else if (typeof obj === 'function') dynamicCallback = obj;
 
   return async(req, res, next) => {
-    let auth, uri, qs, body;
+    let auth, uri;
     let method = 'POST';
-
-    const pieces = parseAuthHeader(req.get('Authorization'));
-    const expires = req.registration ? req.registration.expires : null;
-    const data = Object.assign({method: req.method, expires}, pieces);
 
     if (dynamicCallback) {
       const sipUri = parseUri(req.uri);
@@ -91,6 +87,9 @@ function digestChallenge(obj, logger) {
 
     // challenge requests without credentials
     if (!req.has('Authorization')) return respondChallenge(req, res);
+    const pieces = parseAuthHeader(req.get('Authorization'));
+    const expires = req.registration ? req.registration.expires : null;
+    const data = Object.assign({method: req.method, expires}, pieces);
 
     debug(`parsed authorization header: ${JSON.stringify(pieces)}`);
     const opts = Object.assign({
