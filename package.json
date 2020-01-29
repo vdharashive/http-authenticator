@@ -1,0 +1,26 @@
+{
+  "name": "jambonz-http-authenticator",
+  "version": "0.0.1",
+  "description": "a drachtio middleware package for jambonz that delegates sip authentication to a customer-supplied http api",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jambonz/jambonz-http-authenticator.git"
+  },
+  "keywords": [
+    "drachtio",
+    "sip"
+  ],
+  "author": "Dave Horton",
+  "license": "MIT",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "drachtio-srf": "^4.4.27",
+    "nonce": "^1.0.4",
+    "request": "^2.88.0",
+    "request-debug": "^0.2.0"
+  }
+}
