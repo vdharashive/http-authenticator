@@ -1,7 +1,7 @@
 const request = require('request');
 const nonce = require('nonce')();
 const parseUri = require('drachtio-srf').parseUri;
-const debug = require('debug')('drachtio:http-authenticator');
+const debug = require('debug')('jambonz:http-authenticator');
 
 function parseAuthHeader(hdrValue) {
   const pieces = { scheme: 'digest'} ;
@@ -103,6 +103,7 @@ function digestChallenge(obj, logger) {
     if ('GET' === method) qs = data;
     else body = data;
 
+    debug(`sending http request with ${JSON.stringify(opts)}`);
     request(opts, (err, response, body) => {
       if (err) {
         debug(`Error from calling auth callback: ${err}`);
