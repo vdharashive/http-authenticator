@@ -60,9 +60,6 @@ function digestChallenge(obj, logger) {
     let auth, uri, qs, body;
     let method = 'POST';
 
-    // challenge requests without credentials
-    if (!req.has('Authorization')) return respondChallenge(req, res);
-
     const pieces = parseAuthHeader(req.get('Authorization'));
     const expires = req.registration ? req.registration.expires : null;
     const data = Object.assign({method: req.method, expires}, pieces);
@@ -92,6 +89,8 @@ function digestChallenge(obj, logger) {
       if (obj.auth) auth = Object.assign({}, obj.auth);
     }
 
+    // challenge requests without credentials
+    if (!req.has('Authorization')) return respondChallenge(req, res);
 
     debug(`parsed authorization header: ${JSON.stringify(pieces)}`);
     const opts = Object.assign({
