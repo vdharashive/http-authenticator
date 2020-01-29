@@ -75,7 +75,7 @@ function digestChallenge(obj, logger) {
           logger.debug(`jambonz-http-authenticator: Unknown realm ${sipUri.host}, rejecting with 403`);
           return res.send(403);
         }
-        logger.debug({obj}`jambonz-http-authenticator realm ${sipUri.host} auth details`);
+        logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
           uri = obj.uri || obj.url;
           if (obj.auth) auth = Object.assign({}, obj.auth);
