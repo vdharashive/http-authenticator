@@ -78,7 +78,7 @@ function digestChallenge(obj, logger) {
         logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
           uri = obj.uri || obj.url;
-          if (obj.username && obj.password) Object.assign(auth, {username: obj.username, password: obj.password});
+          if (obj.username && obj.password) auth = {username: obj.username, password: obj.password};
           if (obj.method) method = obj.method.toUpperCase();
         }
         else uri = obj;
@@ -100,8 +100,8 @@ function digestChallenge(obj, logger) {
       method,
       json: true
     });
-    if ('GET' === method) qs = data;
-    else body = data;
+    if ('GET' === method) opts.qs = data;
+    else opts.body = data;
 
     debug(`sending http request with ${JSON.stringify(opts)}`);
     request(opts, (err, response, body) => {
