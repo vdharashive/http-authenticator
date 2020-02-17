@@ -84,7 +84,7 @@ function digestChallenge(obj, logger, opts) {
           logger.debug(`jambonz-http-authenticator: Unknown realm ${sipUri.host}, rejecting with 403`);
           return res.send(403, {
             headers: {
-              'X-Reason': obj.blacklistUnknownRealms ?
+              'X-Reason': opts.blacklistUnknownRealms ?
                 `detected potential spammer from ${req.source_address}:${req.source_port}` :
                 'Unknown or invalid realm'
             }
