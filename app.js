@@ -1,7 +1,18 @@
 const nonce = require('nonce')();
 const parseUri = require('drachtio-srf').parseUri;
 const noopLogger = {info: () => {}, error: () => {}};
+const bent = require('bent');
+const qs = require('qs');
 const debug = require('debug')('jambonz:http-authenticator');
+
+const toBase64 = (str) => Buffer.from(str || '', 'utf8').toString('base64');
+
+function basicAuth(username, password) {
+  if (!username || !password) return {};
+  const creds = `${username}:${password || ''}`;
+  const header = `Basic ${toBase64(creds)}`;
+  return {Authorization: header};
+}
 
 function parseAuthHeader(hdrValue) {
   const pieces = { scheme: 'digest'} ;
@@ -62,7 +73,7 @@ function digestChallenge(obj, logger, opts) {
   else if (typeof obj === 'function') dynamicCallback = obj;
 
   return async(req, res, next) => {
-    let auth, uri;
+    let headers = {}, uri;
     let method = 'POST';
 
     if (dynamicCallback) {
@@ -82,7 +93,7 @@ function digestChallenge(obj, logger, opts) {
         logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
           uri = obj.uri || obj.url;
-          if (obj.username && obj.password) auth = {username: obj.username, password: obj.password};
+          if (obj.username && obj.password) headers = basicAuth(obj.username, obj.password);
           if (obj.method) method = obj.method.toUpperCase();
         }
         else uri = obj;
@@ -93,7 +104,7 @@ function digestChallenge(obj, logger, opts) {
     }
     else {
       uri = obj.uri || obj.url;
-      if (obj.auth) auth = Object.assign({}, obj.auth);
+      if (obj.auth) headers = basicAuth(obj.auth.username, obj.auth.password);
     }
 
     // challenge requests without credentials
@@ -103,38 +114,36 @@ function digestChallenge(obj, logger, opts) {
     const data = Object.assign({method: req.method, expires}, pieces);
 
     debug(`parsed authorization header: ${JSON.stringify(pieces)}`);
-    const opts = Object.assign({
-      uri,
-      auth,
-      method,
-      json: true
-    });
-    if ('GET' === method) opts.qs = data;
-    else opts.body = data;
 
-    debug(`sending http request with ${JSON.stringify(opts)}`);
-    request(opts, (err, response, body) => {
-      if (err) {
-        debug(`Error from calling auth callback: ${err}`);
-        return next(err);
-      }
-      debug(`received ${response.statusCode} with body ${JSON.stringify(body)}`);
-      if (response.statusCode !== 200) {
-        debug(`auth callback returned a non-success response: ${response.statusCode}`);
-        return res.send(500);
-      }
-      if (body.status != 'ok') {
-        // TODO: deal with blacklist requests
-        res.send(403);
-      }
+    let body = null;
+    if ('GET' === method) {
+      const str = qs.stringify(data);
+      uri = `${uri}?${str}`;
+    }
+    else {
+      body = data;
+    }
 
-      // success
+    const request = bent('json', 200, method, headers);
+    try {
+      const json = await request(uri, body, headers);
+      if (json.status !== 'ok') {
+        res.send(403, {headers: {
+          'X-Reason': json.blacklist === true ?
+            `detected potential spammer from ${req.source_address}:${req.source_port}` :
+            'Invalid credentials'
+        }});
+      }
       req.authorization = {
         challengeResponse: pieces,
-        grant: body
+        grant: json
       };
       next();
-    });
+    }
+    catch (err) {
+      debug(`Error from calling auth callback: ${err}`);
+      return next(err);
+    }
   };
 }
 

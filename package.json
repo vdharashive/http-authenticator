@@ -1,6 +1,6 @@
 {
   "name": "jambonz-http-authenticator",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "a drachtio middleware package for jambonz that delegates sip authentication to a customer-supplied http api",
   "main": "app.js",
   "scripts": {
@@ -20,6 +20,7 @@
     "bent": "^7.0.6",
     "debug": "^4.1.1",
     "drachtio-srf": "^4.4.27",
-    "nonce": "^1.0.4"
+    "nonce": "^1.0.4",
+    "qs": "^6.9.1"
   }
 }
