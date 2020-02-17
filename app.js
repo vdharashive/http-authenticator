@@ -1,6 +1,6 @@
-const request = require('request');
 const nonce = require('nonce')();
 const parseUri = require('drachtio-srf').parseUri;
+const noopLogger = {info: () => {}, error: () => {}};
 const debug = require('debug')('jambonz:http-authenticator');
 
 function parseAuthHeader(hdrValue) {
@@ -50,9 +50,14 @@ function respondChallenge(req, res) {
   res.send(401, {headers});
 }
 
-function digestChallenge(obj, logger) {
+function digestChallenge(obj, logger, opts) {
   let dynamicCallback;
-  if (!logger) logger = {info: () => {}, error: () => {}};
+  opts = opts || {};
+  if (logger && typeof logger.info !== 'function') {
+    opts = logger;
+    logger = noopLogger;
+  }
+  if (!logger) logger = noopLogger;
   if (typeof obj === 'string') obj = {uri: obj};
   else if (typeof obj === 'function') dynamicCallback = obj;
 
@@ -66,7 +71,13 @@ function digestChallenge(obj, logger) {
         const obj = await dynamicCallback(sipUri.host);
         if (!obj) {
           logger.debug(`jambonz-http-authenticator: Unknown realm ${sipUri.host}, rejecting with 403`);
-          return res.send(403);
+          return res.send(403, {
+            headers: {
+              'X-Reason': obj.blacklistUnknownRealms ?
+                `detected potential spammer from ${req.source_address}:${req.source_port}` :
+                'Unknown or invalid realm'
+            }
+          });
         }
         logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
