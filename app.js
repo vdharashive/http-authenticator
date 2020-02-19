@@ -81,7 +81,7 @@ function digestChallenge(obj, logger, opts) {
       try {
         const obj = await dynamicCallback(sipUri.host);
         if (!obj) {
-          logger.debug(`jambonz-http-authenticator: Unknown realm ${sipUri.host}, rejecting with 403`);
+          debug(`jambonz-http-authenticator: Unknown realm ${sipUri.host}, rejecting with 403`);
           return res.send(403, {
             headers: {
               'X-Reason': opts.blacklistUnknownRealms ?
@@ -90,7 +90,7 @@ function digestChallenge(obj, logger, opts) {
             }
           });
         }
-        logger.debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
+        debug({obj}, `jambonz-http-authenticator realm ${sipUri.host} auth details`);
         if (typeof obj === 'object') {
           uri = obj.uri || obj.url;
           if (obj.username && obj.password) headers = basicAuth(obj.username, obj.password);
