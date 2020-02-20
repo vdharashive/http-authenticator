@@ -4,7 +4,7 @@ const noopLogger = {info: () => {}, error: () => {}};
 const bent = require('bent');
 const qs = require('qs');
 const debug = require('debug')('jambonz:http-authenticator');
-
+const Emitter = require('events');
 const toBase64 = (str) => Buffer.from(str || '', 'utf8').toString('base64');
 
 function basicAuth(username, password) {
@@ -62,8 +62,10 @@ function respondChallenge(req, res) {
 }
 
 function digestChallenge(obj, logger, opts) {
-  let dynamicCallback;
   opts = opts || {};
+  const wantsEvents = opts.emitter && opts.emitter instanceof Emitter;
+  let dynamicCallback;
+
   if (logger && typeof logger.info !== 'function') {
     opts = logger;
     logger = noopLogger;
@@ -71,6 +73,7 @@ function digestChallenge(obj, logger, opts) {
   if (!logger) logger = noopLogger;
   if (typeof obj === 'string') obj = {uri: obj};
   else if (typeof obj === 'function') dynamicCallback = obj;
+  
 
   return async(req, res, next) => {
     let headers = {}, uri;
@@ -125,24 +128,43 @@ function digestChallenge(obj, logger, opts) {
     }
 
     const request = bent('json', 200, method, headers);
+    let rtt;
     try {
+      const startAt = wantsEvents ? process.hrtime() : 0;
       const json = await request(uri, body, headers);
+      if (startAt) {
+        const diff = process.hrtime(startAt);
+        rtt = diff[0] * 1e3 + diff[1] * 1e-6;    
+      }
       if (json.status !== 'ok') {
         res.send(403, {headers: {
           'X-Reason': json.blacklist === true ?
             `detected potential spammer from ${req.source_address}:${req.source_port}` :
             'Invalid credentials'
         }});
+        if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+          rtt: rtt.toFixed(0),
+          status: 403
+        });
+        return;
       }
       req.authorization = {
         challengeResponse: pieces,
         grant: json
       };
+      if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+        rtt: rtt.toFixed(0),
+        status: 200
+      });
       next();
     }
     catch (err) {
       debug(`Error from calling auth callback: ${err}`);
-      return next(err);
+      res.send(err.statusCode || 500);
+      if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+        rtt: rtt.toFixed(0),
+        status: 500
+      });
     }
   };
 }
