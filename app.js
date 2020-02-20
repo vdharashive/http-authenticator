@@ -73,7 +73,6 @@ function digestChallenge(obj, logger, opts) {
   if (!logger) logger = noopLogger;
   if (typeof obj === 'string') obj = {uri: obj};
   else if (typeof obj === 'function') dynamicCallback = obj;
-  
 
   return async(req, res, next) => {
     let headers = {}, uri;
@@ -142,7 +141,7 @@ function digestChallenge(obj, logger, opts) {
             `detected potential spammer from ${req.source_address}:${req.source_port}` :
             'Invalid credentials'
         }});
-        if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+        if (wantsEvents) opts.emitter.emit('regHookOutcome', {
           rtt: rtt.toFixed(0),
           status: 403
         });
@@ -152,7 +151,7 @@ function digestChallenge(obj, logger, opts) {
         challengeResponse: pieces,
         grant: json
       };
-      if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+      if (wantsEvents) opts.emitter.emit('regHookOutcome', {
         rtt: rtt.toFixed(0),
         status: 200
       });
@@ -161,7 +160,7 @@ function digestChallenge(obj, logger, opts) {
     catch (err) {
       debug(`Error from calling auth callback: ${err}`);
       res.send(err.statusCode || 500);
-      if (wantsEvents) obj.emitter.emit('regHookOutcome', {
+      if (wantsEvents) opts.emitter.emit('regHookOutcome', {
         rtt: rtt.toFixed(0),
         status: 500
       });
