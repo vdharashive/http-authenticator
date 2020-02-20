@@ -128,8 +128,8 @@ function digestChallenge(obj, logger, opts) {
 
     const request = bent('json', 200, method, headers);
     let rtt;
+    const startAt = wantsEvents ? process.hrtime() : 0;
     try {
-      const startAt = wantsEvents ? process.hrtime() : 0;
       const json = await request(uri, body, headers);
       if (startAt) {
         const diff = process.hrtime(startAt);
@@ -158,12 +158,17 @@ function digestChallenge(obj, logger, opts) {
       next();
     }
     catch (err) {
-      debug(`Error from calling auth callback: ${err}`);
-      res.send(err.statusCode || 500);
-      if (wantsEvents) opts.emitter.emit('regHookOutcome', {
-        rtt: rtt.toFixed(0),
-        status: 500
-      });
+      logger.info(`Error from calling auth callback: ${err}`);
+      const status = err.statusCode || 500;
+      res.send(status);
+      if (startAt) {
+        const diff = process.hrtime(startAt);
+        rtt = diff[0] * 1e3 + diff[1] * 1e-6;
+        opts.emitter.emit('regHookOutcome', {
+          rtt: rtt.toFixed(0),
+          status: status
+        });
+      }
     }
   };
 }
