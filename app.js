@@ -133,7 +133,7 @@ function digestChallenge(obj, logger, opts) {
       const json = await request(uri, body, headers);
       if (startAt) {
         const diff = process.hrtime(startAt);
-        rtt = diff[0] * 1e3 + diff[1] * 1e-6;    
+        rtt = diff[0] * 1e3 + diff[1] * 1e-6;
       }
       if (json.status !== 'ok') {
         res.send(403, {headers: {

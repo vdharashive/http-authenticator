@@ -1,4 +1,4 @@
-# drachtio-http-authenticator
+# http-authenticator ![CI](https://github.com/jambonz/http-authenticator/workflows/CI/badge.svg)
 
 drachtio middleware that delegates sip authentication to an http api.  This allows, for instance, a multi-tenant sip application server to delegate authentication to a customer api.
 

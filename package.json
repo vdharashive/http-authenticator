@@ -1,10 +1,11 @@
 {
-  "name": "jambonz-http-authenticator",
-  "version": "0.1.5",
+  "name": "@jambonz/http-authenticator",
+  "version": "0.1.6",
   "description": "a drachtio middleware package for jambonz that delegates sip authentication to a customer-supplied http api",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "jslint": "eslint app.js"
   },
   "repository": {
     "type": "git",
@@ -17,10 +18,14 @@
   "author": "Dave Horton",
   "license": "MIT",
   "dependencies": {
-    "bent": "^7.0.6",
-    "debug": "^4.1.1",
-    "drachtio-srf": "^4.4.27",
+    "bent": "^7.3.12",
+    "debug": "^4.3.1",
+    "drachtio-srf": "^4.4.44",
     "nonce": "^1.0.4",
-    "qs": "^6.9.1"
+    "qs": "^6.9.4"
+  },
+  "devDependencies": {
+    "eslint": "^7.15.0",
+    "eslint-plugin-promise": "^4.2.1"
   }
 }
