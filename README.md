@@ -32,7 +32,7 @@ Additionally, for admitted requests, the middleware adds a `req.authorization` o
 - grant - an object containing the json response received in the 200 OK to the POST request.
 
 ```
-const authenticator = require('drachtio-http-authenticator')({
+const authenticator = require('@jambonz/http-authenticator')({
   url: 'https://example.com/auth',
   auth: {
     username: 'foo',
