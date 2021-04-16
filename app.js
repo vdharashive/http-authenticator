@@ -135,7 +135,7 @@ function digestChallenge(obj, logger, opts) {
         const diff = process.hrtime(startAt);
         rtt = diff[0] * 1e3 + diff[1] * 1e-6;
       }
-      if (json.status !== 'ok') {
+      if (!json.status || 'ok' !== json.status.toLowerCase()) {
         res.send(403, {headers: {
           'X-Reason': json.blacklist === true ?
             `detected potential spammer from ${req.source_address}:${req.source_port}` :
@@ -165,7 +165,7 @@ function digestChallenge(obj, logger, opts) {
         const diff = process.hrtime(startAt);
         rtt = diff[0] * 1e3 + diff[1] * 1e-6;
         if (wantsEvents) {
-          opts.emitter.emit('error', err);
+          opts.emitter.emit('error', {...err, hook: uri});
           opts.emitter.emit('regHookOutcome', {
             rtt: rtt.toFixed(0),
             status: status
