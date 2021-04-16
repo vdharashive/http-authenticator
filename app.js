@@ -164,10 +164,13 @@ function digestChallenge(obj, logger, opts) {
       if (startAt) {
         const diff = process.hrtime(startAt);
         rtt = diff[0] * 1e3 + diff[1] * 1e-6;
-        opts.emitter.emit('regHookOutcome', {
-          rtt: rtt.toFixed(0),
-          status: status
-        });
+        if (wantsEvents) {
+          opts.emitter.emit('err', err);
+          opts.emitter.emit('regHookOutcome', {
+            rtt: rtt.toFixed(0),
+            status: status
+          });
+        }
       }
     }
   };
