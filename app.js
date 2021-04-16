@@ -165,10 +165,11 @@ function digestChallenge(obj, logger, opts) {
         const diff = process.hrtime(startAt);
         rtt = diff[0] * 1e3 + diff[1] * 1e-6;
         if (wantsEvents) {
-          opts.emitter.emit('error', {...err, hook: uri});
+          opts.emitter.emit('error', {...err, hook: uri}, req);
           opts.emitter.emit('regHookOutcome', {
             rtt: rtt.toFixed(0),
-            status: status
+            status: status,
+            req
           });
         }
       }
