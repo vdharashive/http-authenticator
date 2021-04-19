@@ -4,8 +4,28 @@ const noopLogger = {info: () => {}, error: () => {}};
 const bent = require('bent');
 const qs = require('qs');
 const debug = require('debug')('jambonz:http-authenticator');
+const crypto = require('crypto');
 const Emitter = require('events');
 const toBase64 = (str) => Buffer.from(str || '', 'utf8').toString('base64');
+
+function computeSignature(payload, timestamp, secret) {
+  const data = 'string' === payload ?
+    payload :
+    JSON.stringify(payload);
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${timestamp}.${data}`, 'utf8')
+    .digest('hex');
+}
+
+function generateSigHeader(payload, secret) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = computeSignature(payload, timestamp, secret);
+  const scheme = 'v1';
+  return {
+    'Jambonz-Signature': `t=${timestamp},${scheme}=${signature}`
+  };
+}
 
 function basicAuth(username, password) {
   if (!username || !password) return {};
@@ -130,6 +150,10 @@ function digestChallenge(obj, logger, opts) {
     let rtt;
     const startAt = wantsEvents ? process.hrtime() : 0;
     try {
+      if (req.locals && req.locals.webhook_secret) {
+        const sigHeader = generateSigHeader(body || 'null', req.locals.webhook_secret);
+        headers = {...sigHeader, ...headers};
+      }
       const json = await request(uri, body, headers);
       if (startAt) {
         const diff = process.hrtime(startAt);
