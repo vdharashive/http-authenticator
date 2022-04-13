@@ -133,7 +133,13 @@ function digestChallenge(obj, logger, opts) {
     if (!req.has('Authorization')) return respondChallenge(req, res);
     const pieces = parseAuthHeader(req.get('Authorization'));
     const expires = req.registration ? req.registration.expires : null;
-    const data = Object.assign({method: req.method, expires}, pieces);
+    const data = {
+      source_address: req.source_address,
+      source_port: req.source_port,
+      method: req.method,
+      expires,
+      ...pieces
+    };
 
     debug(`parsed authorization header: ${JSON.stringify(pieces)}`);
 
