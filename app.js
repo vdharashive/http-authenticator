@@ -137,6 +137,7 @@ function digestChallenge(obj, logger, opts) {
       source_address: req.source_address,
       source_port: req.source_port,
       method: req.method,
+      ...('POST' === method && {headers: req.headers}),
       expires,
       ...pieces
     };
