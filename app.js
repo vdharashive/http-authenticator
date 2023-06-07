@@ -159,7 +159,7 @@ function digestChallenge(obj, logger, opts) {
     try {
       if (req.locals && req.locals.webhook_secret) {
         const sigHeader = generateSigHeader(body || 'null', req.locals.webhook_secret);
-        headers = {...sigHeader, ...headers};
+        headers = {...sigHeader, ...headers,'user-agent': 'jambonz'};
       }
       const json = await request(uri, body, headers);
       if (startAt) {
